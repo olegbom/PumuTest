@@ -296,6 +296,7 @@ int main(void)
   MX_TIM3_Init();
   MX_USB_HOST_Init();
   MX_FATFS_Init();
+  MX_USART6_UART_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -380,7 +381,12 @@ int main(void)
         juliaSwitchFlag = 0;
       }
       sprintf(joy_data_string, "÷ентр (%5.4f; %5.4f); с (%5.4f; %5.4fi); Zoom %5.2f; FPS %3d;", xOffset, yOffset, cReal, cImag, zoom, FpsReal);
+
+
       LCD_DisplayStringLine(0, 0, joy_data_string, 70);
+
+      HAL_UART_Transmit(&huart2, joy_data_string, 70, 100);
+      HAL_UART_Transmit(&huart2, "\r\n\r\n", 5, 100);
     }
 
 

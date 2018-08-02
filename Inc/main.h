@@ -94,8 +94,6 @@
 #define LD4_GPIO_Port GPIOD
 #define LD3_Pin GPIO_PIN_13
 #define LD3_GPIO_Port GPIOD
-#define I2S3_MCK_Pin GPIO_PIN_7
-#define I2S3_MCK_GPIO_Port GPIOC
 #define Joy1_SW_Pin GPIO_PIN_8
 #define Joy1_SW_GPIO_Port GPIOA
 #define VBUS_FS_Pin GPIO_PIN_9
