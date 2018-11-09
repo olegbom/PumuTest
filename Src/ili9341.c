@@ -154,7 +154,7 @@ void LCD_Init(void)
   //Frame Rate Control
   LCD_WriteCommand(0xB1);
   LCD_WriteParametr(0x00);
-  LCD_WriteParametr(0x1B);	 //Frame Rate 79Hz
+  LCD_WriteParametr(0x1F);	 //Frame Rate 79Hz
 
   //Display Function Control
   LCD_WriteCommand(0xB6);

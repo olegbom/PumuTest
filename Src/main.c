@@ -78,6 +78,8 @@ volatile float yOffset = 0;
 volatile uint16_t colorX = 0;
 volatile uint16_t colorY = 0;
 volatile uint16_t color = 0xFFFF;
+volatile uint16_t colorLines = 0xFFFF;
+volatile uint8_t  zeroBit = 0;
 volatile uint8_t modeJoy2 = 0;
 volatile uint8_t modeJoy1 = 0;
 volatile uint8_t modeSwitchFlag = 1;
@@ -167,6 +169,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   static uint16_t Joy2_ButtonState = 0;
   static uint16_t secondCountner = 0;
 
+
   if(htim->Instance == htim3.Instance)
   {
     HAL_ADC_Start_DMA(&hadc1, (uint32_t*) ADC_Data,4);
@@ -181,9 +184,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     {
       //Нажалась кнопка
       modeJoy2++;
-      if(modeJoy2>2) modeJoy2 = 0;
+      if(modeJoy2>3) modeJoy2 = 0;
       modeSwitchFlag = 1;
       juliaSwitchFlag = 1;
+
     }
 
      switch (modeJoy2) {
@@ -214,6 +218,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
        //  color = xy2rgb(((float)ADC_Data[2] - 2048)/2048, ((float)ADC_Data[3] - 2048)/2048);
          }
          break;
+
+
      }
 
 
@@ -226,6 +232,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
       if(modeJoy1>1) modeJoy1 = 0;
       modeSwitchFlag = 1;
       juliaSwitchFlag = 1;
+
+      if(modeJoy2 == 3)
+      {
+    	  zeroBit++;
+		  if(zeroBit == 16) zeroBit = 0;
+    	  colorLines = 0xFFFF & (~(1 << zeroBit));
+      }
     }
 
     switch (modeJoy1) {
@@ -320,8 +333,9 @@ int main(void)
 
   LCD_Init();
 
-  HAL_Delay(1000);
-  LCD_FillScreen(BLUE);
+  HAL_Delay(100);
+
+  LCD_SetTextColor(YELLOW);
 
   LCD_FillScreen(RED);
   HAL_TIM_Base_Start(&htim3);
@@ -392,7 +406,7 @@ int main(void)
       }
 
     }
-    else
+    else if(modeJoy2 == 0)
     {
       if(juliaSwitchFlag)
       {
@@ -414,7 +428,23 @@ int main(void)
 
       LCD_DisplayStringLine(0, 26, message, 25);
     }
+    else if(modeJoy2 == 3)
+    {
 
+    	sprintf (message, "FPS: %d bit: %d", FpsReal, zeroBit);
+    	LCD_DisplayStringLine(0, 13, message, 25);
+
+    	LCD_SetRecordingArea(0, 32, LCD_TFTWIDTH, LCD_TFTHEIGHT - 32);
+		LCD_WriteCommand(LCD_MEMORYWRITE);
+		for(uint16_t y = 32; y < LCD_TFTHEIGHT; y++)
+		for(uint16_t x = 0; x < LCD_TFTWIDTH; x++)
+		{
+			uint16_t color = (x+tim3Counter/2) % (4+(y-20)/8) ? BLACK+1 : colorLines;
+			//LCD_DrawPixel(x,y,color);
+			LCD_WriteData(color);
+		}
+
+    }
 
     if( modeSwitchFlag == 1)
     {
@@ -447,6 +477,7 @@ int main(void)
 
 		  }
           break;
+
 
       }
       switch (modeJoy1) {

@@ -81,6 +81,7 @@ __inline void LCD_WriteParametr(uint8_t parametr)
 
 __inline void LCD_WriteData(uint16_t data)
 {
+
 	*(__IO uint16_t *) (LCD_DATA) = data;
 }
 
