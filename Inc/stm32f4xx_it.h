@@ -49,6 +49,7 @@
 
 void SysTick_Handler(void);
 void TIM3_IRQHandler(void);
+void TIM8_BRK_TIM12_IRQHandler(void);
 void DMA2_Stream0_IRQHandler(void);
 void OTG_FS_IRQHandler(void);
 

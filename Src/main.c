@@ -257,6 +257,15 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     tim3Counter++;
   }
 }
+uint16_t tim4_counter = 0;
+void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
+{
+	if(htim->Instance == htim12.Instance)
+	{
+		tim4_counter = htim12.Instance->CCR2;
+	}
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -297,6 +306,8 @@ int main(void)
   MX_USB_HOST_Init();
   MX_FATFS_Init();
   MX_USART6_UART_Init();
+  MX_TIM2_Init();
+  MX_TIM12_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -308,16 +319,24 @@ int main(void)
   HAL_ADC_Start_DMA(&hadc1,(uint32_t*) ADC_Data,4);
 
   LCD_Init();
+
   HAL_Delay(1000);
+  LCD_FillScreen(BLUE);
+
   LCD_FillScreen(RED);
   HAL_TIM_Base_Start(&htim3);
   HAL_NVIC_SetPriority(TIM3_IRQn, 2, 1);
   HAL_NVIC_EnableIRQ(TIM3_IRQn);
   HAL_TIM_Base_Start_IT(&htim3);
 
+  HAL_TIM_Base_Start_IT(&htim12);
+  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_4);
+  HAL_TIM_IC_Start_IT(&htim12, TIM_CHANNEL_1);
+  HAL_TIM_IC_Start_IT(&htim12, TIM_CHANNEL_2);
 
 
-
+  char message[25] = "";
+  float distance = 50.0f;
   uint16_t oldColorX = 0, oldColorY = 0;
   while (1)
   {
@@ -386,7 +405,14 @@ int main(void)
       LCD_DisplayStringLine(0, 0, joy_data_string, 70);
 
       HAL_UART_Transmit(&huart2, joy_data_string, 70, 100);
-      HAL_UART_Transmit(&huart2, "\r\n\r\n", 5, 100);
+      HAL_UART_Transmit(&huart2, "\r\n", 5, 100);
+
+
+      distance = (float)(tim4_counter)/2.0f/29.1f;
+	  sprintf (message, "Дальнометр: %8d мм", (uint16_t)((tim4_counter)/2.0f/29.1f*10));
+
+
+      LCD_DisplayStringLine(0, 26, message, 25);
     }
 
 
@@ -431,6 +457,7 @@ int main(void)
           LCD_DisplayStringLine(0, 13, "Джойстик 1: Перемещение", 40);
           break;
       }
+
 
 
 
