@@ -32,6 +32,7 @@
 "Middlewares/Third_Party/FatFs/src/ff_gen_drv.o"
 "Middlewares/Third_Party/FatFs/src/option/syscall.o"
 "Src/adc.o"
+"Src/asteroids.o"
 "Src/dma.o"
 "Src/fatfs.o"
 "Src/fonts.o"

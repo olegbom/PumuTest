@@ -5,6 +5,7 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../Src/adc.c \
+../Src/asteroids.c \
 ../Src/dma.c \
 ../Src/fatfs.c \
 ../Src/fonts.c \
@@ -25,6 +26,7 @@ C_SRCS += \
 
 OBJS += \
 ./Src/adc.o \
+./Src/asteroids.o \
 ./Src/dma.o \
 ./Src/fatfs.o \
 ./Src/fonts.o \
@@ -45,6 +47,7 @@ OBJS += \
 
 C_DEPS += \
 ./Src/adc.d \
+./Src/asteroids.d \
 ./Src/dma.d \
 ./Src/fatfs.d \
 ./Src/fonts.d \

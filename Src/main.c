@@ -62,6 +62,7 @@
 /* USER CODE BEGIN Includes */
 #include "ili9341.h"
 #include "math.h"
+#include "asteroids.h"
 
 /* USER CODE END Includes */
 
@@ -184,7 +185,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     {
       //Нажалась кнопка
       modeJoy2++;
-      if(modeJoy2>3) modeJoy2 = 0;
+      if(modeJoy2>4) modeJoy2 = 0;
       modeSwitchFlag = 1;
       juliaSwitchFlag = 1;
 
@@ -321,6 +322,7 @@ int main(void)
   MX_USART6_UART_Init();
   MX_TIM2_Init();
   MX_TIM12_Init();
+  MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -439,12 +441,20 @@ int main(void)
 		for(uint16_t y = 32; y < LCD_TFTHEIGHT; y++)
 		for(uint16_t x = 0; x < LCD_TFTWIDTH; x++)
 		{
-			uint16_t color = (x+tim3Counter/2) % (4+(y-20)/8) ? BLACK+1 : colorLines;
+			uint16_t color = (x+tim3Counter/2) % (4+(y-20)/8) ? BLACK: colorLines;
 			//LCD_DrawPixel(x,y,color);
 			LCD_WriteData(color);
 		}
 
     }
+    else if(modeJoy2 == 4)
+    {
+        int x = (ADC_Data[2] - 2048) /256;
+        int y = (ADC_Data[3] - 2048) /256;
+        set_joystick_input(x, y);
+        asteroids_game_draw();
+    }
+
 
     if( modeSwitchFlag == 1)
     {
@@ -477,8 +487,9 @@ int main(void)
 
 		  }
           break;
-
-
+        case 4:
+          LCD_FillScreen(BLACK);
+          break;
       }
       switch (modeJoy1) {
         case 0:
@@ -495,6 +506,7 @@ int main(void)
       modeSwitchFlag = 0;
     }
 
+    HAL_Delay(10);
 
     //HAL_UART_Transmit(&huart2, joy_data_string, 30, 100);
 
