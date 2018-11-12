@@ -38,9 +38,8 @@ volatile Player_TypeDef player = {
                 .x = LCD_TFTWIDTH / 2,
                 .y = LCD_TFTHEIGHT / 2
         },
-        .dir_angle = 0,
+        .velocity = {0, 0},
         .rotation = 0,
-        .speed = 0
 };
 
 
@@ -50,29 +49,26 @@ volatile uint16_t asteroids_count = 3;
 volatile Asteroid_TypeDef asteroids[3] = {
     { .size = 5,
       .pos = { 100, 100 },
-      .dir_angle = 20,
-      .speed = 2,
+      .velocity = { -1, 2},
       .delta_angle = 1,
       .rotation = 30,
     },
     { .size = 3,
       .pos = { 50, 100 },
-      .dir_angle = 90,
-      .speed = 1,
+	  .velocity = { 1, 2},
       .delta_angle = 2,
       .rotation = 170,
     },
     { .size = 6,
       .pos = { 100, 50 },
-      .dir_angle = 240,
-      .speed = 3,
+	  .velocity = { 0.4f, -1},
       .delta_angle = -1,
       .rotation = 0,
     },
 };
 
-#define ASTEROID_POINT_COUNT 8
-const Point_TypeDef Asteroid_Points[] =
+#define ASTEROID_POINTS_COUNT 8
+const Vector2f Asteroid_Points[] =
 {   { -10, -5 },
     { -10, 4 },
     { 0, 4 },
@@ -83,8 +79,8 @@ const Point_TypeDef Asteroid_Points[] =
     { 0, -5 },
 };
 
-#define PLAYER_POINT_COUNT 3
-const Point_TypeDef Player_Points[] =
+#define PLAYER_POINTS_COUNT 3
+const Vector2f Player_Points[] =
 {   { -5, -5 },
     { 5, 0 },
     { -5, 5 }
@@ -119,11 +115,11 @@ float cosinus(uint16_t angle)
     else return sinus_table[angle - 270];
 }
 
-Point_TypeDef rotate_vector(Point_TypeDef point, uint16_t angle)
+Vector2f rotate_vector(Vector2f point, uint16_t angle)
 {
     float sin_rot = sinus(angle);
     float cos_rot = cosinus(angle);
-    Point_TypeDef result = {
+    Vector2f result = {
             point.x*cos_rot - point.y*sin_rot,
             point.x*sin_rot + point.y*cos_rot
     };
@@ -134,11 +130,9 @@ Point_TypeDef rotate_vector(Point_TypeDef point, uint16_t angle)
 
 void asteroid_pos_update() {
     for (uint16_t i = 0; i < asteroids_count; ++i) {
-        float dx = sinus(asteroids[i].dir_angle)*asteroids[i].speed;
-        float dy = cosinus(asteroids[i].dir_angle)*asteroids[i].speed;
 
-        asteroids[i].pos.x += dx;
-        asteroids[i].pos.y += dy;
+        asteroids[i].pos.x += asteroids[i].velocity.x;
+        asteroids[i].pos.y += asteroids[i].velocity.y;
 
         if(asteroids[i].pos.x < 10)
             asteroids[i].pos.x += LCD_TFTWIDTH - 20;
@@ -161,11 +155,8 @@ void asteroid_pos_update() {
 
 void player_pos_update()
 {
-    float dx = sinus(player.dir_angle)*player.speed;
-    float dy = cosinus(player.dir_angle)*player.speed;
-
-    player.pos.x += dx;
-    player.pos.y += dy;
+    player.pos.x += player.velocity.x;
+    player.pos.y += player.velocity.y;
 
 
     if(player.pos.x < 10)
@@ -188,22 +179,20 @@ void player_pos_update()
 
     if(joystick_delta_y != 0)
     {
-        float s1 = player.speed;
-        float s2 = joystick_delta_y*0.2f;
-        int alpha_inv = 180-player.dir_angle + player.rotation;
-        if(alpha_inv >=360) alpha_inv %=alpha_inv;
-        else if(alpha_inv < 0) alpha_inv = 360 + alpha_inv;
-        player.speed = sqrtf(s1*s1+s2*s2 - 2*s1*s2*cosinus(alpha_inv));
-        player.dir_angle += (uint16_t)asinf(s2*sinus(alpha_inv));
+    	float dvx = sinus(player.rotation)*joystick_delta_y*0.2f;
+    	float dvy = cosinus(player.rotation)*joystick_delta_y*0.2f;
+
+    	player.velocity.x += dvx;
+    	player.velocity.y += dvy;
     }
 
     joystick_delta_y = 0;
     joystick_delta_x = 0;
 }
 
-void line_strip_draw_rot(const Point_TypeDef * points, uint16_t size, uint16_t color,
-        Point_TypeDef position, uint16_t angle) {
-    Point_TypeDef p0, p1;
+void line_strip_draw_rot(const Vector2f * points, uint16_t size, uint16_t color,
+        Vector2f position, uint16_t angle) {
+    Vector2f p0, p1;
     p0 = Asteroid_Points[0];
     p0 = rotate_vector(p0, angle);
 
@@ -224,7 +213,7 @@ void line_strip_draw_rot(const Point_TypeDef * points, uint16_t size, uint16_t c
 
 void asteroids_draw(uint16_t color) {
     for (uint16_t i = 0; i < asteroids_count; ++i) {
-        line_strip_draw_rot(Asteroid_Points, ASTEROID_POINT_COUNT,
+        line_strip_draw_rot(Asteroid_Points, ASTEROID_POINTS_COUNT,
                 color, asteroids[i].pos, asteroids[i].rotation);
     }
 }
@@ -232,13 +221,8 @@ void asteroids_draw(uint16_t color) {
 
 
 void player_draw(uint16_t color) {
-    //line_strip_draw_rot(Player_Points, PLAYER_POINT_COUNT,
-    //        color, player.pos, player.rotation);
-
-    line_strip_draw_rot(Asteroid_Points, ASTEROID_POINT_COUNT,
-                    color,  player.pos, player.rotation);
-    line_strip_draw_rot(Player_Points, PLAYER_POINT_COUNT,
-            color,  player.pos, player.dir_angle);
+    line_strip_draw_rot(Player_Points, PLAYER_POINTS_COUNT,
+            color, player.pos, player.rotation);
 }
 
 void set_joystick_input(int x, int y)
