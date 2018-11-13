@@ -9,8 +9,6 @@
 #include "ili9341.h"
 #include "math.h"
 
-
-
 const float sinus_table[] = { 0., 0.017452406, 0.034899497, 0.052335956,
         0.069756474, 0.087155743, 0.104528463, 0.121869343, 0.139173101,
         0.156434465, 0.173648178, 0.190808995, 0.207911691, 0.224951054,
@@ -34,12 +32,15 @@ const float sinus_table[] = { 0., 0.017452406, 0.034899497, 0.052335956,
 
 
 volatile Player_TypeDef player = {
-        .pos = {
-                .x = LCD_TFTWIDTH / 2,
-                .y = LCD_TFTHEIGHT / 2
-        },
-        .velocity = {0, 0},
-        .rotation = 0,
+	.so = {
+		.pos = {
+				.x = LCD_TFTWIDTH / 2,
+				.y = LCD_TFTHEIGHT / 2
+		},
+		.velocity = {0, 0},
+		.rotation = 0,
+		.size = 1,
+	}
 };
 
 
@@ -47,24 +48,33 @@ volatile Player_TypeDef player = {
 volatile uint16_t asteroids_count = 3;
 
 volatile Asteroid_TypeDef asteroids[3] = {
-    { .size = 5,
-      .pos = { 100, 100 },
-      .velocity = { -1, 2},
-      .delta_angle = 1,
-      .rotation = 30,
-    },
-    { .size = 3,
-      .pos = { 50, 100 },
-	  .velocity = { 1, 2},
-      .delta_angle = 2,
-      .rotation = 170,
-    },
-    { .size = 6,
-      .pos = { 100, 50 },
-	  .velocity = { 0.4f, -1},
-      .delta_angle = -1,
-      .rotation = 0,
-    },
+	{
+		.so = {
+			.size = 1,
+			.pos = {100, 100},
+			.velocity = {-1, 2},
+			.rotation = 30
+		},
+		.delta_angle = 1,
+	},
+	{
+		.so = {
+			.size = 0.8f,
+			.pos = {50, 100},
+			.velocity = {1, 2},
+			.rotation = 170,
+		},
+		.delta_angle = 2,
+	},
+	{
+		.so = {
+			.size = 1.4f,
+			.pos = {100, 50},
+			.velocity = {0.4f, -1},
+			.rotation = 0,
+		},
+		.delta_angle = -1,
+	}
 };
 
 #define ASTEROID_POINTS_COUNT 8
@@ -115,114 +125,146 @@ float cosinus(uint16_t angle)
     else return sinus_table[angle - 270];
 }
 
-Vector2f rotate_vector(Vector2f point, uint16_t angle)
+void rotate_vector(Vector2f *point, uint16_t angle)
 {
     float sin_rot = sinus(angle);
     float cos_rot = cosinus(angle);
-    Vector2f result = {
-            point.x*cos_rot - point.y*sin_rot,
-            point.x*sin_rot + point.y*cos_rot
-    };
-    return result;
+    float x = point->x*cos_rot - point->y*sin_rot;
+    float y = point->x*sin_rot + point->y*cos_rot;
+    point->x = x;
+    point->y = y;
+}
+
+void translate_vector(volatile Vector2f *point, Vector2f tr)
+{
+	point->x += tr.x;
+	point->y += tr.y;
+}
+
+void scale_vector(Vector2f *point, float scale)
+{
+	point->x *= scale;
+	point->y *= scale;
 }
 
 
+void space_object_position_update(volatile SpaceObject_TypeDef *so)
+{
+	translate_vector(&so->pos, so->velocity);
+
+	        if(so->pos.x < 10)
+	            so->pos.x += LCD_TFTWIDTH - 20;
+	        else if(so->pos.x > LCD_TFTWIDTH - 10)
+	        	so->pos.x -= LCD_TFTWIDTH - 20;
+
+	        if(so->pos.y < 10)
+	        	so->pos.y += LCD_TFTHEIGHT - 20;
+	        else if(so->pos.y > LCD_TFTHEIGHT - 10)
+	        	so->pos.y -= LCD_TFTHEIGHT - 20;
+
+}
 
 void asteroid_pos_update() {
     for (uint16_t i = 0; i < asteroids_count; ++i) {
-
-        asteroids[i].pos.x += asteroids[i].velocity.x;
-        asteroids[i].pos.y += asteroids[i].velocity.y;
-
-        if(asteroids[i].pos.x < 10)
-            asteroids[i].pos.x += LCD_TFTWIDTH - 20;
-        else if(asteroids[i].pos.x > LCD_TFTWIDTH - 10)
-            asteroids[i].pos.x -= LCD_TFTWIDTH - 20;
-
-        if(asteroids[i].pos.y < 10)
-            asteroids[i].pos.y += LCD_TFTHEIGHT - 20;
-        else if(asteroids[i].pos.y > LCD_TFTHEIGHT - 10)
-            asteroids[i].pos.y -= LCD_TFTHEIGHT - 20;
+    	space_object_position_update(&asteroids[i].so);
 
 
-        asteroids[i].rotation+=asteroids[i].delta_angle;
-        if(asteroids[i].rotation >=360)
-            asteroids[i].rotation %=asteroids[i].rotation;
-        else if(asteroids[i].rotation < 0)
-            asteroids[i].rotation = 360 + asteroids[i].rotation;
+
+        asteroids[i].so.rotation+=asteroids[i].delta_angle;
+        if(asteroids[i].so.rotation >=360)
+            asteroids[i].so.rotation %=asteroids[i].so.rotation;
+        else if(asteroids[i].so.rotation < 0)
+            asteroids[i].so.rotation = 360 + asteroids[i].so.rotation;
     }
 }
 
 void player_pos_update()
 {
-    player.pos.x += player.velocity.x;
-    player.pos.y += player.velocity.y;
+	space_object_position_update(&player.so);
 
 
-    if(player.pos.x < 10)
-        player.pos.x += LCD_TFTWIDTH - 20;
-    else if(player.pos.x > LCD_TFTWIDTH - 10)
-        player.pos.x -= LCD_TFTWIDTH - 20;
+    player.so.rotation += joystick_delta_x;
 
-    if(player.pos.y < 10)
-        player.pos.y += LCD_TFTHEIGHT - 20;
-    else if(player.pos.y > LCD_TFTHEIGHT - 10)
-        player.pos.y -= LCD_TFTHEIGHT - 20;
-
-
-    player.rotation += joystick_delta_x;
-
-    if(player.rotation >=360)
-        player.rotation %=player.rotation;
-    else if(player.rotation < 0)
-        player.rotation = 360 + player.rotation;
+    if(player.so.rotation >=360)
+        player.so.rotation %=player.so.rotation;
+    else if(player.so.rotation < 0)
+        player.so.rotation = 360 + player.so.rotation;
 
     if(joystick_delta_y != 0)
     {
-    	float dvx = sinus(player.rotation)*joystick_delta_y*0.2f;
-    	float dvy = cosinus(player.rotation)*joystick_delta_y*0.2f;
+    	float dvx = sinus(player.so.rotation)*joystick_delta_y*0.2f;
+    	float dvy = cosinus(player.so.rotation)*joystick_delta_y*0.2f;
 
-    	player.velocity.x += dvx;
-    	player.velocity.y += dvy;
+    	player.so.velocity.x += dvx;
+    	player.so.velocity.y += dvy;
     }
 
     joystick_delta_y = 0;
     joystick_delta_x = 0;
 }
 
-void line_strip_draw_rot(const Vector2f * points, uint16_t size, uint16_t color,
-        Vector2f position, uint16_t angle) {
-    Vector2f p0, p1;
-    p0 = Asteroid_Points[0];
-    p0 = rotate_vector(p0, angle);
 
-    for (uint16_t j = 0; j < size; ++j) {
-        p1 = Asteroid_Points[(j + 1) % size];
 
-        p1 = rotate_vector(p1, angle);
+void space_object_draw(const Vector2f * points, uint16_t p_count,  uint16_t color, volatile SpaceObject_TypeDef *so)
+{
+	Vector2f p0, p1;
+	p0 = points[0];
+	rotate_vector(&p0, so->rotation);
+	scale_vector(&p0, so->size);
+	translate_vector(&p0, so->pos);
+	for (uint16_t j = 0; j < p_count; ++j) {
+		p1 = points[(j + 1) % p_count];
 
-        uint16_t x0 = (uint16_t) (position.x + p0.x);
-        uint16_t y0 = (uint16_t) (position.y + p0.y);
-        uint16_t x1 = (uint16_t) (position.x + p1.x);
-        uint16_t y1 = (uint16_t) (position.y + p1.y);
-        LCD_DrawLine(x0, y0, x1, y1, color);
-        p0 = p1;
-    }
+		rotate_vector(&p1, so->rotation);
+		scale_vector(&p1, so->size);
+		translate_vector(&p0, so->pos);
+
+
+ 	  	LCD_DrawLine((uint16_t) p0.x, (uint16_t) p0.y,
+					 (uint16_t) p1.x, (uint16_t) p1.y,
+					 color);
+		p0 = p1;
+	}
 }
 
 
 void asteroids_draw(uint16_t color) {
     for (uint16_t i = 0; i < asteroids_count; ++i) {
-        line_strip_draw_rot(Asteroid_Points, ASTEROID_POINTS_COUNT,
-                color, asteroids[i].pos, asteroids[i].rotation);
+        space_object_draw(Asteroid_Points, ASTEROID_POINTS_COUNT, color, &asteroids[i].so);
     }
 }
 
 
 
 void player_draw(uint16_t color) {
-    line_strip_draw_rot(Player_Points, PLAYER_POINTS_COUNT,
-            color, player.pos, player.rotation);
+    space_object_draw(Player_Points, PLAYER_POINTS_COUNT, color, &player.so);
+}
+
+uint8_t is_collision(volatile SpaceObject_TypeDef *so1, volatile SpaceObject_TypeDef *so2)
+{
+    float dx = so1->pos.x - so2->pos.x;
+    float dy = so1->pos.y - so2->pos.y;
+    float min_distance = so1->size + so2->size;
+
+    if(dx > min_distance || dy > min_distance)
+        return 0;
+    if(dx*dx + dy*dy > min_distance*min_distance)
+        return 0;
+    return 1;
+}
+
+void calc_collisions()
+{
+	 for (uint16_t i = 0; i < asteroids_count; ++i)
+	 {
+		 for (uint16_t j = i+1; j < asteroids_count; ++j)
+		 {
+			if(is_collision(&asteroids[i].so, &asteroids[j].so))
+			{
+
+			}
+		 }
+	 }
 }
 
 void set_joystick_input(int x, int y)
@@ -234,11 +276,15 @@ void set_joystick_input(int x, int y)
 void asteroids_game_draw()
 {
     asteroids_draw(BLACK);
-    asteroid_pos_update();
-    asteroids_draw(WHITE);
-
     player_draw(BLACK);
+
+
+    asteroid_pos_update();
     player_pos_update();
+    calc_collisions();
+
+
+    asteroids_draw(WHITE);
     player_draw(WHITE);
 
 }
