@@ -39,10 +39,11 @@ void asteroids_game_draw();
 float sinus(uint16_t angle);
 float cosinus(uint16_t angle);
 
-void rotate_vector(Vector2f *point, uint16_t angle);
-void translate_vector(volatile Vector2f *point, Vector2f tr);
-void scale_vector(Vector2f *point, float scale);
+void vector_rotate(Vector2f *point, uint16_t angle);
+void vector_translate(volatile Vector2f *point, Vector2f tr);
+void vector_scale(Vector2f *point, float scale);
 
 void line_strip_draw_rot(const Vector2f * points, uint16_t p_count, uint16_t color,
         Vector2f position, uint16_t angle, float count);
-void set_joystick_input(int x, int y);
+void set_input(uint16_t joy1x,  uint16_t joy1y,
+        uint16_t joy2x,  uint16_t joy2y);

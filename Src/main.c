@@ -52,6 +52,7 @@
 #include "adc.h"
 #include "dma.h"
 #include "fatfs.h"
+#include "rng.h"
 #include "spi.h"
 #include "tim.h"
 #include "usart.h"
@@ -323,6 +324,7 @@ int main(void)
   MX_TIM2_Init();
   MX_TIM12_Init();
   MX_SPI1_Init();
+  MX_RNG_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -449,9 +451,9 @@ int main(void)
     }
     else if(modeJoy2 == 4)
     {
-        int x = (ADC_Data[2] - 2048) /256;
-        int y = (ADC_Data[3] - 2048) /256;
-        set_joystick_input(x, y);
+
+        set_input(ADC_Data[1], ADC_Data[0], ADC_Data[2], ADC_Data[3]);
+
         asteroids_game_draw();
     }
 

@@ -45,60 +45,58 @@ volatile Player_TypeDef player = {
 
 
 
-volatile uint16_t asteroids_count = 3;
+volatile uint16_t asteroids_count = 2;
 
-volatile Asteroid_TypeDef asteroids[3] = {
+volatile Asteroid_TypeDef asteroids[2] = {
+	{
+		.so = {
+			.size = 2,
+			.pos = {100, 100},
+			.velocity = {-0.2f, 0},
+			.rotation = 30
+		},
+		.delta_angle = 0,
+	},
 	{
 		.so = {
 			.size = 1,
-			.pos = {100, 100},
-			.velocity = {-1, 2},
-			.rotation = 30
-		},
-		.delta_angle = 1,
-	},
-	{
-		.so = {
-			.size = 0.8f,
 			.pos = {50, 100},
-			.velocity = {1, 2},
+			.velocity = {0,0},
 			.rotation = 170,
 		},
-		.delta_angle = 2,
+		.delta_angle = 0,
 	},
-	{
-		.so = {
-			.size = 1.4f,
-			.pos = {100, 50},
-			.velocity = {0.4f, -1},
-			.rotation = 0,
-		},
-		.delta_angle = -1,
-	}
+
 };
 
-#define ASTEROID_POINTS_COUNT 8
+#define ASTEROID_POINTS_COUNT 11
 const Vector2f Asteroid_Points[] =
-{   { -10, -5 },
-    { -10, 4 },
-    { 0, 4 },
-    { 0, 9 },
-    { 9, 0 },
-    { 9, -1 },
-    { 0, -10 },
-    { 0, -5 },
+{
+        {-2, -10},
+        {-10, -4},
+        {-4, 1},
+        {-7, 7},
+        {-4, 10},
+        {1, 8},
+        {6, 10},
+        {10, 4},
+        {8, 0},
+        {8, -7},
+        {4, -10},
+
+
 };
 
 #define PLAYER_POINTS_COUNT 3
 const Vector2f Player_Points[] =
 {   { -5, -5 },
-    { 5, 0 },
+    { 10, 0 },
     { -5, 5 }
 };
 
 
-volatile int joystick_delta_x = 0;
-volatile int joystick_delta_y = 0;
+volatile int joystick_alpha = -1;
+volatile int joystick_y = 0;
 
 
 float sinus(uint16_t angle)
@@ -125,7 +123,7 @@ float cosinus(uint16_t angle)
     else return sinus_table[angle - 270];
 }
 
-void rotate_vector(Vector2f *point, uint16_t angle)
+void vector_rotate(Vector2f *point, uint16_t angle)
 {
     float sin_rot = sinus(angle);
     float cos_rot = cosinus(angle);
@@ -135,32 +133,45 @@ void rotate_vector(Vector2f *point, uint16_t angle)
     point->y = y;
 }
 
-void translate_vector(volatile Vector2f *point, Vector2f tr)
+void vector_translate(volatile Vector2f *point, Vector2f tr)
 {
 	point->x += tr.x;
 	point->y += tr.y;
 }
 
-void scale_vector(Vector2f *point, float scale)
+void vector_scale(Vector2f *point, float scale)
 {
 	point->x *= scale;
 	point->y *= scale;
 }
 
+float vectors_dot(Vector2f a, Vector2f b)
+{
+    return a.x*b.x+a.y*b.y;
+}
+
+float vector_length(Vector2f a)
+{
+    return sqrtf(a.x*a.x + a.y*a.y);
+}
+
+void vector_normalize(Vector2f *a)
+{
+    vector_scale(a, 1/vector_length(*a));
+}
+
 
 void space_object_position_update(volatile SpaceObject_TypeDef *so)
 {
-	translate_vector(&so->pos, so->velocity);
+	vector_translate(&so->pos, so->velocity);
 
-	        if(so->pos.x < 10)
-	            so->pos.x += LCD_TFTWIDTH - 20;
-	        else if(so->pos.x > LCD_TFTWIDTH - 10)
-	        	so->pos.x -= LCD_TFTWIDTH - 20;
+    if(so->pos.x < 10 || so->pos.x > LCD_TFTWIDTH - 10)
+        so->velocity.x = -so->velocity.x;
 
-	        if(so->pos.y < 10)
-	        	so->pos.y += LCD_TFTHEIGHT - 20;
-	        else if(so->pos.y > LCD_TFTHEIGHT - 10)
-	        	so->pos.y -= LCD_TFTHEIGHT - 20;
+
+    if(so->pos.y < 10 || so->pos.y > LCD_TFTHEIGHT - 10)
+        so->velocity.y = -so->velocity.y;
+
 
 }
 
@@ -183,24 +194,34 @@ void player_pos_update()
 	space_object_position_update(&player.so);
 
 
-    player.so.rotation += joystick_delta_x;
+	if (joystick_alpha != -1) {
+        int delta = player.so.rotation - joystick_alpha;
+        if (delta < -180)
+            player.so.rotation--;
+        else if (delta < 0)
+            player.so.rotation++;
+        else if (delta < 180)
+            player.so.rotation--;
+        else
+            player.so.rotation++;
+    }
 
     if(player.so.rotation >=360)
         player.so.rotation %=player.so.rotation;
     else if(player.so.rotation < 0)
         player.so.rotation = 360 + player.so.rotation;
 
-    if(joystick_delta_y != 0)
+    if(joystick_y != 0)
     {
-    	float dvx = sinus(player.so.rotation)*joystick_delta_y*0.2f;
-    	float dvy = cosinus(player.so.rotation)*joystick_delta_y*0.2f;
+    	float dvx = cosinus(player.so.rotation)*joystick_y*0.002f;
+    	float dvy = sinus(player.so.rotation)*joystick_y*0.002f;
 
-    	player.so.velocity.x += dvx;
-    	player.so.velocity.y += dvy;
+    	player.so.velocity.x -= dvx;
+    	player.so.velocity.y -= dvy;
     }
 
-    joystick_delta_y = 0;
-    joystick_delta_x = 0;
+    joystick_y = 0;
+    joystick_alpha = -1;
 }
 
 
@@ -209,15 +230,15 @@ void space_object_draw(const Vector2f * points, uint16_t p_count,  uint16_t colo
 {
 	Vector2f p0, p1;
 	p0 = points[0];
-	rotate_vector(&p0, so->rotation);
-	scale_vector(&p0, so->size);
-	translate_vector(&p0, so->pos);
+	vector_rotate(&p0, so->rotation);
+	vector_scale(&p0, so->size);
+	vector_translate(&p0, so->pos);
 	for (uint16_t j = 0; j < p_count; ++j) {
 		p1 = points[(j + 1) % p_count];
 
-		rotate_vector(&p1, so->rotation);
-		scale_vector(&p1, so->size);
-		translate_vector(&p0, so->pos);
+		vector_rotate(&p1, so->rotation);
+		vector_scale(&p1, so->size);
+		vector_translate(&p1, so->pos);
 
 
  	  	LCD_DrawLine((uint16_t) p0.x, (uint16_t) p0.y,
@@ -244,7 +265,7 @@ uint8_t is_collision(volatile SpaceObject_TypeDef *so1, volatile SpaceObject_Typ
 {
     float dx = so1->pos.x - so2->pos.x;
     float dy = so1->pos.y - so2->pos.y;
-    float min_distance = so1->size + so2->size;
+    float min_distance = so1->size*10 + so2->size*10;
 
     if(dx > min_distance || dy > min_distance)
         return 0;
@@ -261,16 +282,49 @@ void calc_collisions()
 		 {
 			if(is_collision(&asteroids[i].so, &asteroids[j].so))
 			{
+			    Vector2f o1 = asteroids[i].so.pos,
+			             o2 = asteroids[j].so.pos;
+			    Vector2f axis = {o2.x - o1.x, o2.y - o1.y};
+			    vector_normalize(&axis);
 
+			    float m1_sqr = asteroids[i].so.size
+                        * asteroids[i].so.size;
+			    float m2_sqr = asteroids[j].so.size
+			             * asteroids[j].so.size;
+			    volatile float p1 = vectors_dot(asteroids[i].so.velocity, axis) * m1_sqr;
+                volatile float p2 = vectors_dot(asteroids[j].so.velocity, axis) * m2_sqr;
+
+                if(p1 < 0) p1 = -p1;
+                if(p2 < 0) p2 = -p2;
+                volatile float p = p1 + p2;
+                Vector2f v2 = { axis.x*p,
+                        axis.y*p
+                };
+                Vector2f v1 = { -v2.x, -v2.y};
+                vector_scale(&v1, 1/m1_sqr);
+                vector_scale(&v2, 1/m2_sqr);
+                vector_translate(&asteroids[i].so.velocity,  v1);
+                vector_translate(&asteroids[j].so.velocity,  v2);
 			}
 		 }
 	 }
 }
 
-void set_joystick_input(int x, int y)
+void set_input(uint16_t joy1x,  uint16_t joy1y,
+        uint16_t joy2x,  uint16_t joy2y)
 {
-    joystick_delta_x = x;
-    joystick_delta_y = y;
+    int x = (joy1x - 2048) /8;
+    int y = (2048 - joy1y) /8;
+    if(x>-8 && x <8) x = 0;
+    if(y>-8 && y <8) y = 0;
+    uint16_t alpha = (uint16_t)(atan2f(y,x)/((float)M_PI)*180.1f + 179.0f);
+    if(x != 0 && y != 0)
+    {
+        joystick_alpha = alpha;
+    }
+
+
+    joystick_y = (joy2y - 2048) /256;
 }
 
 void asteroids_game_draw()
