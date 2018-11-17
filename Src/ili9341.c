@@ -257,19 +257,19 @@ void LCD_DrawLine(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1,
   uint16_t tmp;
 
   /* Check for overflow */
-  if (x0 >= LCD_TFTWIDTH - 1)
+  if (x0 > LCD_TFTWIDTH - 1)
   {
     x0 = LCD_TFTWIDTH - 1;
   }
-  if (x1 >= LCD_TFTWIDTH - 1)
+  if (x1 > LCD_TFTWIDTH - 1)
   {
     x1 = LCD_TFTWIDTH - 1;
   }
-  if (y0 >= LCD_TFTHEIGHT)
+  if (y0 > LCD_TFTHEIGHT)
   {
     y0 = LCD_TFTHEIGHT - 1;
   }
-  if (y1 >= LCD_TFTHEIGHT)
+  if (y1 > LCD_TFTHEIGHT)
   {
     y1 = LCD_TFTHEIGHT - 1;
   }
@@ -338,6 +338,12 @@ void LCD_DrawLine(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1,
   }
 
 }
+
+
+
+
+
+
 
 void LCD_DrawPlot(float *data, uint16_t len, float zoom, uint16_t zero,
     uint16_t color)

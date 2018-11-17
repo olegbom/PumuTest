@@ -52,4 +52,5 @@
 "Src/usb_host.o"
 "Src/usbh_conf.o"
 "Src/usbh_diskio.o"
+"Src/vector.o"
 "startup/startup_stm32f407xx.o"
