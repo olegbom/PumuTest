@@ -1,15 +1,15 @@
 /*
  * matrix.c
  *
- *  Created on: 29 июн. 2018 г.
- *      Author: Олег Высоцкий
+ *  Created on: 29 РёСЋРЅ. 2018 Рі.
+ *      Author: РћР»РµРі Р’С‹СЃРѕС†РєРёР№
  */
 #include "matrix.h"
 #include "math.h"
 
 /**
- * @brief Заполняет матрицу нулями
- * @param[in,out] m Указатель на матрицу
+ * @brief Р—Р°РїРѕР»РЅСЏРµС‚ РјР°С‚СЂРёС†Сѓ РЅСѓР»СЏРјРё
+ * @param[in,out] m РЈРєР°Р·Р°С‚РµР»СЊ РЅР° РјР°С‚СЂРёС†Сѓ
  */
 void Matrix_InitZero(Matrix4x4f * m)
 {
@@ -20,8 +20,8 @@ void Matrix_InitZero(Matrix4x4f * m)
 
 
 /**
- * @brief Заполняет матрицу как еденичную
- * @param[in,out] m Указатель на матрицу
+ * @brief Р—Р°РїРѕР»РЅСЏРµС‚ РјР°С‚СЂРёС†Сѓ РєР°Рє РµРґРµРЅРёС‡РЅСѓСЋ
+ * @param[in,out] m РЈРєР°Р·Р°С‚РµР»СЊ РЅР° РјР°С‚СЂРёС†Сѓ
  */
 void Matrix_Identity(Matrix4x4f * m)
 {

@@ -1,7 +1,7 @@
 [PreviousGenFiles]
-HeaderPath=C:/Ac6/Workspace/PumuTest/Inc
+HeaderPath=C:/Ac6/workspace/PumuTest/Inc
 HeaderFiles=gpio.h;usart.h;stm32f4xx_it.h;stm32f4xx_hal_conf.h;main.h;adc.h;dma.h;fsmc.h;spi.h;tim.h;ffconf.h;usbh_diskio.h;fatfs.h;usb_host.h;usbh_conf.h;rng.h;
-SourcePath=C:/Ac6/Workspace/PumuTest/Src
+SourcePath=C:/Ac6/workspace/PumuTest/Src
 SourceFiles=gpio.c;usart.c;stm32f4xx_it.c;stm32f4xx_hal_msp.c;main.c;adc.c;dma.c;fsmc.c;spi.c;tim.c;usbh_diskio.c;fatfs.c;usb_host.c;usbh_conf.c;rng.c;
 
 [PreviousLibFiles]

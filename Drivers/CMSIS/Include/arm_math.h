@@ -37,7 +37,7 @@
 * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 * POSSIBILITY OF SUCH DAMAGE.
  * -------------------------------------------------------------------- */
-#define ARM_MATH_CM4
+
 /**
    \mainpage CMSIS DSP Software Library
    *

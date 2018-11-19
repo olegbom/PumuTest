@@ -116,7 +116,7 @@ void FileReadWrite(void)
 	uint8_t r_text[100];
 	if(f_mount(&USBDISKFatFs, (TCHAR const*) USBHPath, 0) != FR_OK)
     {
-      LCD_DisplayStringLine(0, 30, "USB Ошибка подключения!", 40);
+      LCD_DisplayStringLine(0, 30, "USB РћС€РёР±РєР° РїРѕРґРєР»СЋС‡РµРЅРёСЏ!", 40);
 	 // Error_Handler();
     }
 	else
@@ -154,13 +154,13 @@ void FileReadWrite(void)
 		 }
 		 else
 		 {
-		   r_text[bytesread]=0;//обнулим байт, следующий за последним
+		   r_text[bytesread]=0;//РѕР±РЅСѓР»РёРј Р±Р°Р№С‚, СЃР»РµРґСѓСЋС‰РёР№ Р·Р° РїРѕСЃР»РµРґРЅРёРј
 		   LCD_DisplayStringLine(0, 70, (char*) r_text, 100);
 		   f_close(&MyFile);
 		 }
 
 	   }
-	   LCD_DisplayStringLine(0, 30, "USB подключен!", 40);*/
+	   LCD_DisplayStringLine(0, 30, "USB РїРѕРґРєР»СЋС‡РµРЅ!", 40);*/
 	}
 
 }
@@ -184,7 +184,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     Joy1_ButtonState += HAL_GPIO_ReadPin(Joy1_SW_GPIO_Port, Joy1_SW_Pin);
     if((Joy1_ButtonState & 0x03FF) == 0x0200)
     {
-      //Нажалась кнопка
+      //РќР°Р¶Р°Р»Р°СЃСЊ РєРЅРѕРїРєР°
       modeJoy2++;
       if(modeJoy2>4) modeJoy2 = 0;
       modeSwitchFlag = 1;
@@ -229,7 +229,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     Joy2_ButtonState += HAL_GPIO_ReadPin(Joy2_SW_GPIO_Port, Joy2_SW_Pin);
     if((Joy2_ButtonState & 0x03FF) == 0x0200)
     {
-      //Нажалась кнопка
+      //РќР°Р¶Р°Р»Р°СЃСЊ РєРЅРѕРїРєР°
       modeJoy1++;
       if(modeJoy1>1) modeJoy1 = 0;
       modeSwitchFlag = 1;
@@ -417,7 +417,7 @@ int main(void)
         LCD_GenerateJuliaFpu(xOffset, yOffset, zoom, cReal, cImag, color);
         juliaSwitchFlag = 0;
       }
-      sprintf(joy_data_string, "Центр (%5.4f; %5.4f); с (%5.4f; %5.4fi); Zoom %5.2f; FPS %3d;", xOffset, yOffset, cReal, cImag, zoom, FpsReal);
+      sprintf(joy_data_string, "Р¦РµРЅС‚СЂ (%5.4f; %5.4f); СЃ (%5.4f; %5.4fi); Zoom %5.2f; FPS %3d;", xOffset, yOffset, cReal, cImag, zoom, FpsReal);
 
 
       LCD_DisplayStringLine(0, 0, joy_data_string, 70);
@@ -427,7 +427,7 @@ int main(void)
 
 
       distance = (float)(tim4_counter)/2.0f/29.1f;
-	  sprintf (message, "Дальнометр: %8d мм", (uint16_t)((tim4_counter)/2.0f/29.1f*10));
+	  sprintf (message, "Р”Р°Р»СЊРЅРѕРјРµС‚СЂ: %8d РјРј", (uint16_t)((tim4_counter)/2.0f/29.1f*10));
 
 
       LCD_DisplayStringLine(0, 26, message, 25);
@@ -463,10 +463,10 @@ int main(void)
       LCD_DrawRect(0,13, LCD_TFTWIDTH, 13, BLACK);
       switch (modeJoy2) {
         case 0:
-          LCD_DisplayStringLine(160, 13, "Джойстик 2: Константа", 40);
+          LCD_DisplayStringLine(160, 13, "Р”Р¶РѕР№СЃС‚РёРє 2: РљРѕРЅСЃС‚Р°РЅС‚Р°", 40);
           break;
         case 1:
-          LCD_DisplayStringLine(160, 13, "Джойстик 2: Цвет", 40);
+          LCD_DisplayStringLine(160, 13, "Р”Р¶РѕР№СЃС‚РёРє 2: Р¦РІРµС‚", 40);
 
           LCD_SetRecordingArea(0, 24, LCD_TFTWIDTH, LCD_TFTHEIGHT - 24);
           LCD_WriteCommand(LCD_MEMORYWRITE);
@@ -495,10 +495,10 @@ int main(void)
       }
       switch (modeJoy1) {
         case 0:
-          LCD_DisplayStringLine(0, 13, "Джойстик 1: Масштаб", 40);
+          LCD_DisplayStringLine(0, 13, "Р”Р¶РѕР№СЃС‚РёРє 1: РњР°СЃС€С‚Р°Р±", 40);
           break;
         case 1:
-          LCD_DisplayStringLine(0, 13, "Джойстик 1: Перемещение", 40);
+          LCD_DisplayStringLine(0, 13, "Р”Р¶РѕР№СЃС‚РёРє 1: РџРµСЂРµРјРµС‰РµРЅРёРµ", 40);
           break;
       }
 

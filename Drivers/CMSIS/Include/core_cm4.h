@@ -154,7 +154,7 @@
       #define __FPU_USED       0U
     #endif
   #else
-    #define __FPUv_USED         0U
+    #define __FPU_USED         0U
   #endif
 
 #elif defined ( __ICCARM__ )

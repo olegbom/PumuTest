@@ -1,7 +1,7 @@
 /*
  * asteroids.c
  *
- *  Created on: 10 нояб. 2018 г.
+ *  Created on: 10 РЅРѕВ¤Р±. 2018 Рі.
  *      Author: olegbom
  */
 
