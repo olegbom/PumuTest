@@ -1,7 +1,7 @@
 /*
  * ili9341.c
  *
- *  Created on: 6 àâã. 2017 ã.
+ *  Created on: 6 ï¿½ï¿½ï¿½. 2017 ï¿½.
  *      Author: Oleg
  */
 #include "ili9341.h"
@@ -128,6 +128,11 @@ void LCD_DisplayStringLine(uint16_t Xpos, uint16_t Ypos, char *ptr,
   /* Send the string character by character on lCD */
   while (*ptr != 0)
   {
+
+      if(((*ptr) & 0b11100000)  == 0b11000000)
+      {
+
+      }
     /* Display one character on LCD */
     LCD_DisplayChar(Xpos + x_delta, Ypos, *ptr);
     /* Decrement the column position by 16 */

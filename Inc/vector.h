@@ -8,6 +8,8 @@
 #ifndef VECTOR_H_
 #define VECTOR_H_
 
+#define ARM_MATH_CM4
+
 #include "stm32f407xx.h"
 #include "arm_math.h"
 
