@@ -122,7 +122,9 @@ void LCD_DisplayChar(uint16_t Xpos, uint16_t Ypos, uint8_t Ascii)
 void LCD_DisplayStringLine(uint16_t Xpos, uint16_t Ypos, char *ptr,
     uint8_t len)
 {
-
+  static char cp1251[100];
+  convert_utf8_to_windows1251(ptr, cp1251, len);
+  ptr = cp1251;
   uint16_t x_delta = 0;
   uint16_t index = 0;
   /* Send the string character by character on lCD */
@@ -150,26 +152,121 @@ void LCD_DisplayStringLine(uint16_t Xpos, uint16_t Ypos, char *ptr,
 void LCD_Init(void)
 {
   LCD_WriteCommand(LCD_SOFTRESET);
-  HAL_Delay(1000);
-  LCD_WriteCommand(LCD_COLMOD);
-  LCD_WriteParametr(COLMOD_PARAMETR);
-  LCD_WriteCommand(LCD_MADCTL);
-  LCD_WriteParametr(MADCTL_PARAMETR);
+  HAL_Delay(5);
+
+
+
+ // magic?
+     LCD_WriteCommand(0xcf);
+     LCD_WriteParametr(0x00);
+     LCD_WriteParametr(0x83);
+     LCD_WriteParametr(0x30);
+
+      LCD_WriteCommand(0xed);
+      LCD_WriteParametr(0x64);
+      LCD_WriteParametr(0x03);
+      LCD_WriteParametr(0x12);
+      LCD_WriteParametr(0x81);
+      LCD_WriteCommand(0xe8);
+      LCD_WriteParametr(0x85);
+      LCD_WriteParametr(0x01);
+      LCD_WriteParametr(0x79);
+      LCD_WriteCommand(0xcb);
+      LCD_WriteParametr(0x39);
+      LCD_WriteParametr(0x2c);
+      LCD_WriteParametr(0x00);
+      LCD_WriteParametr(0x34);
+      LCD_WriteParametr(0x02);
+      LCD_WriteCommand(0xf7);
+      LCD_WriteParametr(0x20);
+      LCD_WriteCommand(0xea);
+      LCD_WriteParametr(0x00);
+      LCD_WriteParametr(0x00);
+
+
+
+  //------------power control------------------------------
+  LCD_WriteCommand(0xc0); //power control
+    LCD_WriteParametr(0x26);
+    LCD_WriteCommand(0xc1); //power control
+    LCD_WriteParametr(0x11);
+    //--------------VCOM
+    LCD_WriteCommand(0xc5); //vcom control
+    LCD_WriteParametr(0x35);//35
+    LCD_WriteParametr(0x3e);//3E
+    LCD_WriteCommand(0xc7); //vcom control
+    LCD_WriteParametr(0xbe); // 0x94
+
+ LCD_WriteCommand( 0x36);
+    // memory access control
+  LCD_WriteParametr(0x28); //0048 my,mx,mv,ml,BGR,mh,0.0
+    LCD_WriteCommand(0x3a); // pixel format set
+    LCD_WriteParametr( 0x55);//16bit /pixel
 
   //Frame Rate Control
   LCD_WriteCommand(0xB1);
   LCD_WriteParametr(0x00);
-  LCD_WriteParametr(0x1F);	 //Frame Rate 79Hz
+  LCD_WriteParametr(0x1B);	 //Frame Rate 70Hz
+
+
 
   //Display Function Control
   LCD_WriteCommand(0xB6);
   LCD_WriteParametr(0x02);
   LCD_WriteParametr(0x82);
 
+  LCD_WriteCommand(0xf2); // 3Gamma Function Disable
+  LCD_WriteParametr(0x08);
+    LCD_WriteCommand(0x26);
+    LCD_WriteParametr(0x01); // gamma set 4 gamma curve 01/02/04/08
+
+  LCD_WriteCommand(0xE0); //positive gamma correction
+    LCD_WriteParametr(0x1f);
+    LCD_WriteParametr(0x1a);
+    LCD_WriteParametr(0x18);
+    LCD_WriteParametr(0x0a);
+    LCD_WriteParametr(0x0f);
+    LCD_WriteParametr(0x06);
+    LCD_WriteParametr(0x45);
+    LCD_WriteParametr(0x87);
+    LCD_WriteParametr(0x32);
+    LCD_WriteParametr(0x0a);
+    LCD_WriteParametr(0x07);
+    LCD_WriteParametr(0x02);
+    LCD_WriteParametr(0x07);
+    LCD_WriteParametr(0x05);
+    LCD_WriteParametr(0x00);
+    LCD_WriteCommand(0xE1); //negamma correction
+    LCD_WriteParametr(0x00);
+    LCD_WriteParametr(0x25);
+    LCD_WriteParametr(0x27);
+    LCD_WriteParametr(0x05);
+    LCD_WriteParametr(0x10);
+    LCD_WriteParametr(0x09);
+    LCD_WriteParametr(0x3a);
+    LCD_WriteParametr(0x78);
+    LCD_WriteParametr(0x4d);
+    LCD_WriteParametr(0x05);
+    LCD_WriteParametr(0x18);
+    LCD_WriteParametr(0x0d);
+    LCD_WriteParametr(0x38);
+    LCD_WriteParametr(0x3a);
+    LCD_WriteParametr(0x1f);
+
+    LCD_WriteCommand(0xb7); //entry mode set
+    LCD_WriteParametr(0x07);
+
+    LCD_WriteCommand( 0xb6);
+        // display function control
+    LCD_WriteParametr(0x0a);
+    LCD_WriteParametr(0x82);
+    LCD_WriteParametr( 0x27);
+    LCD_WriteParametr( 0x00);
+
   LCD_WriteCommand(LCD_SLEEPOUT);
-  HAL_Delay(240);
+  HAL_Delay(100);
   LCD_WriteCommand(LCD_DISPLAYON);
-  HAL_Delay(240);
+  HAL_Delay(100);
 
   LCD_SetFont(&LCD_DEFAULT_FONT);
 }
