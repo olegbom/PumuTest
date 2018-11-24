@@ -64,6 +64,7 @@
 #include "ili9341.h"
 #include "math.h"
 #include "asteroids.h"
+#include "lis3.h"
 
 /* USER CODE END Includes */
 
@@ -116,7 +117,7 @@ void FileReadWrite(void)
 	uint8_t r_text[100];
 	if(f_mount(&USBDISKFatFs, (TCHAR const*) USBHPath, 0) != FR_OK)
     {
-      LCD_DisplayStringLine(0, 30, "USB Ошибка подключения!", 40);
+      LCD_DisplayStringLine(0, 30, "USB Ошибка подключения!");
 	 // Error_Handler();
     }
 	else
@@ -132,7 +133,7 @@ void FileReadWrite(void)
 			{
 				res = f_readdir(&dir, &fno);
 				if (res != FR_OK || fno.fname[0] == 0) break;
-				LCD_DisplayStringLine(0, i, fno.fname, 13);
+				LCD_DisplayStringLine(0, i, fno.fname);
 				i+=15;
 			}
 			f_closedir(&dir);
@@ -186,7 +187,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     {
       //Нажалась кнопка
       modeJoy2++;
-      if(modeJoy2>4) modeJoy2 = 0;
+      if(modeJoy2>5) modeJoy2 = 0;
       modeSwitchFlag = 1;
       juliaSwitchFlag = 1;
 
@@ -331,7 +332,7 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  char joy_data_string[70];
+  char joy_data_string[100];
 
   HAL_ADC_Start_DMA(&hadc1,(uint32_t*) ADC_Data,4);
 
@@ -353,8 +354,7 @@ int main(void)
   HAL_TIM_IC_Start_IT(&htim12, TIM_CHANNEL_2);
 
 
-  char message[25] = "";
-  float distance = 50.0f;
+  char message[70] = "";
   uint16_t oldColorX = 0, oldColorY = 0;
   while (1)
   {
@@ -394,7 +394,7 @@ int main(void)
 
 
          sprintf(joy_data_string, "(%4u;%4u) (%2u;%2u;%2u) FPS %3d;", colorX, colorY, r,g,b, FpsReal);
-         LCD_DisplayStringLine(0, 0, joy_data_string, 70);
+         LCD_DisplayStringLine(0, 0, joy_data_string);
 
 
 
@@ -408,6 +408,14 @@ int main(void)
          //END TEST ZONE
 
       }
+      switch (modeJoy1) {
+        case 0:
+          LCD_DisplayStringLine(0, 13, "Джойстик 1: Масштаб");
+          break;
+        case 1:
+          LCD_DisplayStringLine(0, 13, "Джойстик 1: Перемещение");
+          break;
+      }
 
     }
     else if(modeJoy2 == 0)
@@ -420,23 +428,23 @@ int main(void)
       sprintf(joy_data_string, "Центр (%5.4f; %5.4f); с (%5.4f; %5.4fi); Zoom %5.2f; FPS %3d;", xOffset, yOffset, cReal, cImag, zoom, FpsReal);
 
 
-      LCD_DisplayStringLine(0, 0, joy_data_string, 70);
+      LCD_DisplayStringLine(0, 0, joy_data_string);
 
-      HAL_UART_Transmit(&huart2, joy_data_string, 70, 100);
-      HAL_UART_Transmit(&huart2, "\r\n", 5, 100);
+      HAL_UART_Transmit(&huart2, (uint8_t*)joy_data_string, 70, 100);
+      HAL_UART_Transmit(&huart2, (uint8_t*)"\r\n", 5, 100);
 
 
-      distance = (float)(tim4_counter)/2.0f/29.1f;
+      float distance = (float)(tim4_counter)/2.0f/29.1f;
 	  sprintf (message, "Дальнометр: %8d мм", (uint16_t)((tim4_counter)/2.0f/29.1f*10));
 
 
-      LCD_DisplayStringLine(0, 26, message, 25);
+      LCD_DisplayStringLine(0, 26, message);
     }
     else if(modeJoy2 == 3)
     {
 
     	sprintf (message, "FPS: %d bit: %d", FpsReal, zeroBit);
-    	LCD_DisplayStringLine(0, 13, message, 25);
+    	LCD_DisplayStringLine(0, 13, message);
 
     	LCD_SetRecordingArea(0, 32, LCD_TFTWIDTH, LCD_TFTHEIGHT - 32);
 		LCD_WriteCommand(LCD_MEMORYWRITE);
@@ -456,6 +464,32 @@ int main(void)
 
         asteroids_game_draw();
     }
+    else if(modeJoy2 == 5)
+    {
+
+        int16_t lis3_x = LIS3_ReadX();
+        int16_t lis3_y = LIS3_ReadY();
+        int16_t lis3_z = LIS3_ReadZ();
+
+
+        sprintf(message,"X: %6d", lis3_x);
+        LCD_DisplayStringLine(0, 52, message);
+        sprintf(message,"Y: %6d", lis3_y);
+        LCD_DisplayStringLine(0, 65, message);
+        sprintf(message,"Z: %6d", lis3_z);
+        LCD_DisplayStringLine(0, 78, message);
+        sprintf(message,"FPS: %3d", FpsReal);
+        LCD_DisplayStringLine(0, 91, message);
+
+        static uint16_t x_old = 0, y_old = 0;
+        LCD_DrawLine(LCD_TFTWIDTH/2, LCD_TFTHEIGHT/2, x_old, y_old, BLACK);
+
+        uint16_t lcd_x = LCD_TFTWIDTH/2 + lis3_y/170;
+        uint16_t lcd_y = LCD_TFTHEIGHT/2 + lis3_x/170;
+        LCD_DrawLine(LCD_TFTWIDTH/2, LCD_TFTHEIGHT/2, lcd_x, lcd_y, WHITE);
+        x_old = lcd_x;
+        y_old = lcd_y;
+    }
 
 
     if( modeSwitchFlag == 1)
@@ -463,10 +497,10 @@ int main(void)
       LCD_DrawRect(0,13, LCD_TFTWIDTH, 13, BLACK);
       switch (modeJoy2) {
         case 0:
-          LCD_DisplayStringLine(160, 13, "Джойстик 2: Константа", 40);
+          LCD_DisplayStringLine(160, 13, "Джойстик 2: Константа");
           break;
         case 1:
-          LCD_DisplayStringLine(160, 13, "Джойстик 2: Цвет", 40);
+          LCD_DisplayStringLine(160, 13, "Джойстик 2: Цвет");
 
           LCD_SetRecordingArea(0, 24, LCD_TFTWIDTH, LCD_TFTHEIGHT - 24);
           LCD_WriteCommand(LCD_MEMORYWRITE);
@@ -492,18 +526,24 @@ int main(void)
         case 4:
           LCD_FillScreen(BLACK);
           break;
-      }
-      switch (modeJoy1) {
-        case 0:
-          LCD_DisplayStringLine(0, 13, "Джойстик 1: Масштаб", 40);
+        case 5:
+          LCD_FillScreen(BLACK);
+          LIS3_Init();
+
+          uint8_t lis3_who_am_i = LIS3_ReadReg(LIS3_ADDR_WHO_AM_I);
+          uint8_t lis3_info1 = LIS3_ReadReg(LIS3_ADDR_INFO1);
+          uint8_t lis3_info2 = LIS3_ReadReg(LIS3_ADDR_INFO2);
+
+
+          LCD_DisplayStringLine(0, 0, "LIS3 Registers:");
+          sprintf(message,"Who am I: 0x%2.2X", lis3_who_am_i);
+          LCD_DisplayStringLine(0, 13, message);
+          sprintf(message,"INFO1: 0x%2.2X", lis3_info1);
+          LCD_DisplayStringLine(0, 26, message);
+          sprintf(message,"INFO2: 0x%2.2X", lis3_info2);
+          LCD_DisplayStringLine(0, 39, message);
           break;
-        case 1:
-          LCD_DisplayStringLine(0, 13, "Джойстик 1: Перемещение", 40);
-          break;
       }
-
-
-
 
       modeSwitchFlag = 0;
     }

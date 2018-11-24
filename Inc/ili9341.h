@@ -1,7 +1,7 @@
 /*
  * ili9341.h
  *
- *  Created on: 6 авг. 2017 г.
+ *  Created on: 6 пїЅпїЅпїЅ. 2017 пїЅ.
  *      Author: Oleg
  */
 
@@ -62,7 +62,7 @@
 #define WHITE                       0xFFFF
 
 #define LCD_DATA 0x60020000
-// для записи команд
+// пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 #define LCD_REG 0x60000000
 
 #define LCD_DEFAULT_FONT         PT_Sans7
@@ -110,7 +110,7 @@ MyFONT *LCD_GetFont(void);
 uint8_t LCD_SetRecordingArea(uint16_t x, uint16_t y, uint16_t width, uint16_t height);
 void LCD_DrawChar(uint16_t Xpos, uint16_t Ypos, const MyGLYPH *c);
 void LCD_DisplayChar(uint16_t Line, uint16_t Column, uint8_t Ascii);
-void LCD_DisplayStringLine(uint16_t Xpos, uint16_t Ypos, char *ptr, uint8_t len);
+void LCD_DisplayStringLine(uint16_t Xpos, uint16_t Ypos, char *ptr);
 void LCD_Init(void);
 void LCD_FillScreen(uint16_t color);
 void LCD_DrawRect(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t color);

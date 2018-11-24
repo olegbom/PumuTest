@@ -8,6 +8,9 @@
 #ifndef LIS3_H_
 #define LIS3_H_
 
+#include "main.h"
+
+
 #define LIS3_ADDR_OUT_T    0x0C
 #define LIS3_ADDR_INFO1    0x0D
 #define LIS3_ADDR_INFO2    0x0E
@@ -134,6 +137,8 @@ typedef struct
     unsigned int Xen: 1;  /*!< Z-axis enable */
 } LIS3_CTRL_REG4_TypeDef;
 
+
+
 /**
  * @brief Control register 1
  */
@@ -190,6 +195,9 @@ typedef struct
         0: 4-wire interface; 1: 3-wire interface */
 } LIS3_CTRL_REG5_TypeDef;
 
+
+
+
 /**
  * @brief Control register 6
  */
@@ -235,8 +243,10 @@ typedef struct
 
 void LIS3_WriteReg(uint8_t reg, uint8_t data);
 uint8_t LIS3_ReadReg(uint8_t reg);
-
-
+void LIS3_Init();
+int16_t LIS3_ReadX();
+int16_t LIS3_ReadY();
+int16_t LIS3_ReadZ();
 
 
 #endif /* LIS3_H_ */

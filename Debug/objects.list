@@ -40,6 +40,7 @@
 "Src/fsmc.o"
 "Src/gpio.o"
 "Src/ili9341.o"
+"Src/lis3.o"
 "Src/main.o"
 "Src/matrix.o"
 "Src/rng.o"
