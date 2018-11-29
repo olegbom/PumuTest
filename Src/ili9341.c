@@ -131,10 +131,6 @@ void LCD_DisplayStringLine(uint16_t Xpos, uint16_t Ypos, char *ptr)
   while (*ptr != 0)
   {
 
-      if(((*ptr) & 0b11100000)  == 0b11000000)
-      {
-
-      }
     /* Display one character on LCD */
     LCD_DisplayChar(Xpos + x_delta, Ypos, *ptr);
     /* Decrement the column position by 16 */
